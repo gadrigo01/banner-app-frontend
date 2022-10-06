@@ -9,11 +9,18 @@ import Posts from '../components/Posts'
 import Panel from '../components/Panel'
 import Tabs from '../components/Tabs'
 import { FaCaretDown, FaRegPlusSquare } from 'react-icons/fa'
-import { PhotoshopPicker } from 'react-color'
-import { Checkbox, } from 'antd'
+import { SketchPicker } from 'react-color'
+import { Checkbox, Slider, InputNumber } from 'antd'
+import type { CheckboxChangeEvent } from 'antd/es/checkbox'
+import type { CheckboxValueType } from 'antd/es/checkbox/Group'
 import Link from 'next/link'
 import { NumericFormat } from 'react-number-format'
 
+
+const CheckboxGroup = Checkbox.Group;
+
+const onPageOptions = [' Home page', ' Cart page', ' Product page', ' Collection page'];
+const onDeviceOptions = [' PC', ' Mobile'];
 
 const Home: NextPage = () => {
   const [show, setShow] = useState(false);
@@ -28,6 +35,47 @@ const Home: NextPage = () => {
   const [bannerNum, setBannerNum] = useState(1000000);
   const [imgSel, setImgSel] = useState('');
   const [imgBackground, setImgBackground] = useState('');
+
+  const [opacityValue, setOpacityValue] = useState(100);
+  const [sizeValue, setSizeValue] = useState(20);
+
+  const onOpacityChange = (newValue: any) => {
+    setOpacityValue(newValue);
+    setOpacity(newValue + "%");
+  };
+  const onSizeChange = (newValue: any) => {
+    setSizeValue(newValue);
+    setSize(newValue + "px");
+  };
+
+  const [checkedList1, setCheckedList1] = useState<CheckboxValueType[]>();
+  const [checkedList2, setCheckedList2] = useState<CheckboxValueType[]>();
+  const [indeterminate1, setIndeterminate1] = useState(true);
+  const [indeterminate2, setIndeterminate2] = useState(true);
+  const [checkAll1, setCheckAll1] = useState(false);
+  const [checkAll2, setCheckAll2] = useState(false);
+
+  const onCheckboxChange1 = (list: CheckboxValueType[]) => {
+    setCheckedList1(list);
+    setIndeterminate1(!!list.length && list.length < onPageOptions.length);
+    setCheckAll1(list.length === onPageOptions.length);
+  };
+  const onCheckboxChange2 = (list: CheckboxValueType[]) => {
+    setCheckedList2(list);
+    setIndeterminate2(!!list.length && list.length < onDeviceOptions.length);
+    setCheckAll2(list.length === onDeviceOptions.length);
+  };
+
+  const onCheckAllChange1 = (e: CheckboxChangeEvent) => {
+    setCheckedList1(e.target.checked ? onPageOptions : []);
+    setIndeterminate1(false);
+    setCheckAll1(e.target.checked);
+  };
+  const onCheckAllChange2 = (e: CheckboxChangeEvent) => {
+    setCheckedList2(e.target.checked ? onDeviceOptions : []);
+    setIndeterminate2(false);
+    setCheckAll2(e.target.checked);
+  };
 
   return <div>
     <BannerTitleDiv>
@@ -123,9 +171,8 @@ const Home: NextPage = () => {
             </TabHeaderDiv>
 
             <EditorInputDiv>
-              <Checkbox style={{ fontFamily: 'Inter', fontWeight: '400', fontSize: '12px', lineHeight: '15px' }}> Add Link to the Bar (optional)</Checkbox>
-              <br /><br />
-              <Checkbox style={{ fontFamily: 'Inter', fontWeight: '400', fontSize: '12px', lineHeight: '15px' }}> Include Close Button</Checkbox>
+              <StyledCheckbox> Add Link to the Bar (optional)</StyledCheckbox>
+              <StyledCheckbox> Include Close Button</StyledCheckbox>
 
               <EditorLabel>Link</EditorLabel><br />
               <EditorTextInput type='text' placeholder='https://' />
@@ -149,11 +196,9 @@ const Home: NextPage = () => {
                 </ColorButton>
                 {
                   show ? <div style={{ zIndex: 1000, position: 'absolute' }}>
-                    <PhotoshopPicker
+                    <StyledColorPicker
                       color={color}
-                      onChangeComplete={(color) => { setColor(color.hex) }}
-                      onAccept={() => setShow(false)}
-                      onCancel={() => setShow(false)} />
+                      onChangeComplete={(color) => { setColor(color.hex) }} />
                   </div> : null
                 }
               </InputGroupDiv>
@@ -216,9 +261,19 @@ const Home: NextPage = () => {
               <InputGroupDiv>
                 <EditorLabel>Opacity</EditorLabel>
                 <InputRowDiv>
-                  <SmallNumberInput type='number' min='0' max='100' step='1' defaultValue='100' onChange={(event) => setOpacity(event.target.value + "%")} />
-
-                  <RangeSlider type='range' min='0' max='100' step='1' defaultValue='100' onChange={(event) => setOpacity(event.target.value + "%")} />
+                  <SmallNumberInput
+                    min={1}
+                    max={100}
+                    step={1}
+                    value={opacityValue}
+                    onChange={onOpacityChange}
+                  /><RangeSlider
+                    min={1}
+                    max={100}
+                    step={1}
+                    onChange={onOpacityChange}
+                    value={typeof opacityValue === 'number' ? opacityValue : 0}
+                  />
                 </InputRowDiv>
               </InputGroupDiv>
 
@@ -231,7 +286,6 @@ const Home: NextPage = () => {
             <EditorLabel>Font</EditorLabel>
             <FontSelect onChange={(event) => setFont(event.target.value)}>
               <option value='Inter'>Inter</option>
-              <option value='Roboto'>Roboto</option>
               <option value='Audiowide'>Audiowide</option>
             </FontSelect>
 
@@ -245,11 +299,9 @@ const Home: NextPage = () => {
                 </ColorButton>
                 {
                   show1 ? <div style={{ zIndex: 1000, position: 'absolute' }}>
-                    <PhotoshopPicker
+                    <StyledColorPicker
                       color={txtcolor}
-                      onChangeComplete={(txtcolor) => { setTxtColor(txtcolor.hex) }}
-                      onAccept={() => setShow1(false)}
-                      onCancel={() => setShow1(false)} />
+                      onChangeComplete={(txtcolor) => { setTxtColor(txtcolor.hex) }} />
                   </div> : null
                 }
               </InputGroupDiv>
@@ -257,8 +309,19 @@ const Home: NextPage = () => {
               <InputGroupDiv>
                 <EditorLabel>Size</EditorLabel>
                 <InputRowDiv>
-                  <SmallNumberInput type='number' min='8' max='32' step='1' defaultValue='20' onChange={(event) => setSize(event.target.value + "px")} />
-                  <RangeSlider type='range' min='8' max='32' step='1' defaultValue='20' onChange={(event) => setSize(event.target.value + "px")} />
+                  <SmallNumberInput
+                    min={8}
+                    max={32}
+                    step={1}
+                    value={sizeValue}
+                    onChange={onSizeChange}
+                  /><RangeSlider
+                    min={8}
+                    max={32}
+                    step={1}
+                    onChange={onSizeChange}
+                    value={typeof sizeValue === 'number' ? sizeValue : 0}
+                  />
                 </InputRowDiv>
               </InputGroupDiv>
 
@@ -272,27 +335,15 @@ const Home: NextPage = () => {
               <TabHeaderH5>Display on page</TabHeaderH5>
             </TabHeaderDiv>
 
-            <Checkbox style={{ fontFamily: 'Inter', fontWeight: '400', fontSize: '12px', lineHeight: '15px' }}> All page</Checkbox>
-            <br /><br />
-            <Checkbox style={{ fontFamily: 'Inter', fontWeight: '400', fontSize: '12px', lineHeight: '15px' }}> Home page</Checkbox>
-            <br /><br />
-            <Checkbox style={{ fontFamily: 'Inter', fontWeight: '400', fontSize: '12px', lineHeight: '15px' }}> Cart page</Checkbox>
-            <br /><br />
-            <Checkbox style={{ fontFamily: 'Inter', fontWeight: '400', fontSize: '12px', lineHeight: '15px' }}> Product page</Checkbox>
-            <br /><br />
-            <Checkbox style={{ fontFamily: 'Inter', fontWeight: '400', fontSize: '12px', lineHeight: '15px' }}> Collection page</Checkbox>
-            <br /><br />
+            <StyledCheckbox indeterminate={indeterminate1} onChange={onCheckAllChange1} checked={checkAll1}> All page</StyledCheckbox>
+            <StyledCheckboxGroup options={onPageOptions} value={checkedList1} onChange={onCheckboxChange1} />
 
             <TabHeaderDiv>
               <TabHeaderH5>Display on device</TabHeaderH5>
             </TabHeaderDiv>
 
-            <Checkbox style={{ fontFamily: 'Inter', fontWeight: '400', fontSize: '12px', lineHeight: '15px' }}> All</Checkbox>
-            <br /><br />
-            <Checkbox style={{ fontFamily: 'Inter', fontWeight: '400', fontSize: '12px', lineHeight: '15px' }}> PC</Checkbox>
-            <br /><br />
-            <Checkbox style={{ fontFamily: 'Inter', fontWeight: '400', fontSize: '12px', lineHeight: '15px' }}> Mobile</Checkbox>
-            <br /><br />
+            <StyledCheckbox indeterminate={indeterminate2} onChange={onCheckAllChange2} checked={checkAll2}> All</StyledCheckbox>
+            <StyledCheckboxGroup options={onDeviceOptions} value={checkedList2} onChange={onCheckboxChange2} />
           </ScrollableDiv>
         </Panel>
       </Tabs>
@@ -381,11 +432,17 @@ const BannerSection = styled.section`
   background-size: cover;
   background-repeat: no-repeat;
   width: 100%;
-  height: 15%;
+  height: 10%;
   display: flex;
   justify-content: center;
   align-content: center;
   align-items: center;
+
+  cursor: pointer;
+  
+  @media (min-width: 1200px) {
+    height: 100px;
+  }
 `
 
 const BannerText = styled.div`
@@ -443,6 +500,8 @@ const PrimaryButton = styled.button`
   width: 71px;
   height: 27px;
 
+  cursor: pointer;
+
   background: #18A0FB;
   border-radius: 6px;
 `
@@ -471,6 +530,8 @@ const SecondaryButton = styled.button`
 
   width: 71px;
   height: 27px;
+
+  cursor: pointer;
 
   background: #FFFFFF;
   border: 1.5px solid #CACACA;
@@ -620,6 +681,8 @@ const ColorButton = styled.button`
   width: 110px;
   height: 30px;
 
+  cursor: pointer;
+
   background: #F6F6F7;
   border: 1.5px solid rgba(29, 27, 41, 0.1);
   border-radius: 6px;
@@ -659,6 +722,8 @@ const ImageButton = styled.button`
   width: 140px;
   height: 30px;
 
+  cursor: pointer;
+
   background: #F6F6F7;
   border: 1.5px solid rgba(29, 27, 41, 0.1);
   border-radius: 6px;
@@ -678,14 +743,82 @@ const ImageButtonPreview = styled.div`
   border-radius: 6px;
 `
 
-const RangeSlider = styled.input`
+const RangeSlider = styled(Slider)`
   padding-top: 20px;
-  margin-left: 10px;
   width: 167px;
   height: 30px;
+
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  color: rgba(0, 0, 0, 0.85);
+  font-size: 14px;
+  font-variant: tabular-nums;
+  line-height: 1.5715;
+  list-style: none;
+  font-feature-settings: 'tnum';
+  position: relative;
+
+  margin-left: 20px;
+  margin-top: 20px;
+
+  cursor: pointer;
+  touch-action: none;
+
+  .ant-slider-rail {
+  position: relative;
+  height: 4px;
+  background-color: lightgray;
+  border-radius: 2px;
+  transition: background-color 0.3s;
+}
+
+.ant-slider-track {
+  position: absolute;
+  height: 4px;
+  background-color: black;
+  border-radius: 2px;
+  transition: background-color 0.3s;
+  margin-top: -4px;
+}
+
+.ant-slider-handle {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  margin-top: -10px;
+  background-color: #f6f6f7;
+  border: solid 2px black;
+  border-radius: 50%;
+  box-shadow: 0;
+  cursor: pointer;
+  transition: border-color 0.3s, box-shadow 0.6s, transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+.ant-slider-handle-dragging {
+  z-index: 1;
+}
+
+.ant-slider-handle:focus {
+  border-color: black;
+  outline: none;
+  box-shadow: 0 0 7px 5px rgba(0, 0, 0, 0.12);
+}
+
+.ant-slider:hover .ant-slider-handle:not(.ant-tooltip-open) {
+  border-color: black;
+}
+
+.ant-slider-step {
+  position: absolute;
+  width: 100%;
+  height: 4px;
+  background: transparent;
+  pointer-events: none;
+}
 `
 
-const SmallNumberInput = styled.input`
+const SmallNumberInput = styled(InputNumber)`
   font-family: 'Inter';
   font-style: normal;
   font-weight: 400;
@@ -715,6 +848,34 @@ const SmallNumberInput = styled.input`
   background: #F6F6F7;
   border: 1.5px solid rgba(29, 27, 41, 0.1);
   border-radius: 6px;
+
+  .ant-input-number-input{
+    background-color: #F6F6F7;
+    border: transparent;
+    width: 80%;
+    text-align: right;
+  }
+  .ant-input-number-handler-wrap{
+    position: relative;
+    top: 0;
+    right: 0;
+    width: 10px;
+    height: 60%;
+    background: #f6f6f7;
+    border-radius: 0 2px 2px 0;
+    opacity: 50%;
+    transition: opacity 0.24s linear 0.1s;
+  }
+
+  .ant-input-number-handler-wrap .ant-input-number-handler .ant-input-number-handler-up-inner,
+.ant-input-number-handler-wrap .ant-input-number-handler .ant-input-number-handler-down-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: auto;
+  margin-right: 0;
+  font-size: 7px;
+}
 `
 
 const FontSelect = styled.select`
@@ -743,13 +904,15 @@ const FontSelect = styled.select`
   width: 50%;
   height: 25px;
 
+  cursor: pointer;
+
   background: #FFFFFF;
   border: 1.5px solid rgba(29, 27, 41, 0.1);
   border-radius: 6px;
 `
 
 const ScrollableDiv = styled.div`
-  height: 450px;
+  height: 400px;
 
   overflow: auto;
 `
@@ -856,4 +1019,33 @@ const EditorNumberInput = styled.input`
   height: 25px;
 
   border: 1.5px solid rgba(29, 27, 41, 0.1);
+`
+
+const StyledCheckbox = styled(Checkbox)`
+  font-family: 'Inter';
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 15px;
+  
+  display: block;
+  margin-top: 20px;
+  margin-bottom: 20px;
+`
+const StyledCheckboxGroup = styled(CheckboxGroup)`
+  
+  .ant-checkbox-group-item {
+
+  font-family: 'Inter';
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 15px;
+  
+  display: block;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  }
+`
+
+const StyledColorPicker = styled(SketchPicker)`
+  font-family: 'Inter';
 `

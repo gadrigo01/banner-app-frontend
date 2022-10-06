@@ -12,3 +12,7 @@ body {
 
     background: #F6F6F7;
 }
+
+.ant-slider-tooltip {
+    color: transparent
+}

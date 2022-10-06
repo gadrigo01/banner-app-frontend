@@ -46,8 +46,6 @@ const Home: NextPage = () => {
     const commentsFormServer = await currentPage;
 
     setCurrentPage(commentsFormServer);
-    // scroll to the top
-    //window.scrollTo(0, 0)
   };
 
   return <div>
@@ -235,7 +233,9 @@ const PrimaryButton = styled.button`
   max-height: 50px;
 
   background: #18A0FB;
-  color: #F6F6F7
+  color: #F6F6F7;
+
+  cursor: pointer;
 `
 
 const CreateDiv = styled.div`
